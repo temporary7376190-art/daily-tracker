@@ -1,0 +1,725 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>30-Day Routine Tracker — Dawood</title>
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,700;1,400&family=Lora:ital,wght@0,400;0,600;1,400&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --cream: #F5F0E8;
+    --cream-dark: #EDE7D6;
+    --ink: #1C1C1A;
+    --soft-ink: #3D3D38;
+    --divider: #C8BFA8;
+    --olive: #5C6B4E;
+    --olive-light: #8FA07A;
+    --brown: #8B6F47;
+    --brown-light: #B8956A;
+    --done: #4A6741;
+    --missed: #8B3A3A;
+    --blue: #4A6B8A;
+    --purple: #7A5A8A;
+    --paper: #FAF6EE;
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    background: var(--cream-dark);
+    font-family: 'Lora', Georgia, serif;
+    color: var(--ink);
+    min-height: 100vh;
+  }
+
+  /* ── TOP HEADER ── */
+  .header {
+    background: var(--ink);
+    color: var(--cream);
+    padding: 18px 32px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    border-bottom: 3px solid var(--olive);
+  }
+  .header-title { font-family: 'Playfair Display', serif; font-size: 22px; letter-spacing: 0.03em; }
+  .header-sub { font-size: 12px; color: var(--divider); margin-top: 2px; font-style: italic; }
+  .header-meta { text-align: right; font-size: 12px; color: var(--divider); }
+  .header-meta strong { color: var(--olive-light); font-size: 14px; display: block; }
+
+  /* ── TAB NAV ── */
+  .tabs {
+    display: flex;
+    background: var(--ink);
+    padding: 0 32px;
+    gap: 4px;
+  }
+  .tab {
+    padding: 10px 20px;
+    font-family: 'Lora', serif;
+    font-size: 12px;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    cursor: pointer;
+    border: none;
+    background: transparent;
+    color: var(--divider);
+    border-bottom: 3px solid transparent;
+    transition: all 0.2s;
+  }
+  .tab:hover { color: var(--cream); }
+  .tab.active { color: var(--olive-light); border-bottom-color: var(--olive-light); }
+
+  /* ── MAIN CONTENT ── */
+  .content { padding: 24px 32px; max-width: 1100px; margin: 0 auto; }
+
+  .panel { display: none; }
+  .panel.active { display: block; }
+
+  /* ── DAY SELECTOR ── */
+  .day-selector {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    margin-bottom: 24px;
+    flex-wrap: wrap;
+  }
+  .day-label { font-family: 'Playfair Display', serif; font-size: 28px; color: var(--ink); }
+  .day-sub { font-size: 12px; color: var(--soft-ink); font-style: italic; }
+  .day-nav { display: flex; gap: 8px; margin-left: auto; align-items: center; }
+  .day-nav button {
+    background: var(--ink); color: var(--cream);
+    border: none; padding: 8px 16px; cursor: pointer;
+    font-family: 'Lora', serif; font-size: 13px;
+    transition: background 0.15s;
+  }
+  .day-nav button:hover { background: var(--olive); }
+  .day-dots {
+    display: flex; gap: 5px; flex-wrap: wrap; max-width: 480px;
+  }
+  .day-dot {
+    width: 28px; height: 28px; border-radius: 50%;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 10px; cursor: pointer; font-family: 'Lora', serif;
+    font-weight: 600; transition: all 0.15s; border: 2px solid var(--divider);
+    background: var(--paper); color: var(--soft-ink);
+  }
+  .day-dot:hover { border-color: var(--olive); color: var(--olive); }
+  .day-dot.current { background: var(--olive); color: #fff; border-color: var(--olive); }
+  .day-dot.completed { background: var(--done); color: #fff; border-color: var(--done); opacity: 0.85; }
+  .day-dot.partial { background: var(--brown-light); color: #fff; border-color: var(--brown); }
+
+  /* ── DAILY CARD ── */
+  .day-card {
+    background: var(--paper);
+    border: 1px solid var(--divider);
+    border-top: 4px solid var(--olive);
+    padding: 28px;
+    margin-bottom: 20px;
+  }
+
+  .card-header {
+    display: flex; justify-content: space-between; align-items: flex-start;
+    margin-bottom: 20px; padding-bottom: 14px;
+    border-bottom: 1px solid var(--divider);
+  }
+  .card-date { font-family: 'Playfair Display', serif; font-size: 15px; color: var(--brown); }
+  .progress-circle {
+    display: flex; flex-direction: column; align-items: center;
+  }
+  .progress-num { font-family: 'Playfair Display', serif; font-size: 26px; color: var(--olive); line-height: 1; }
+  .progress-label { font-size: 10px; color: var(--soft-ink); text-transform: uppercase; letter-spacing: 0.05em; }
+
+  /* ── HABIT ROWS ── */
+  .section-title {
+    font-size: 10px; letter-spacing: 0.12em; text-transform: uppercase;
+    color: var(--olive); margin: 18px 0 10px;
+    font-family: 'Lora', serif; font-weight: 600;
+    display: flex; align-items: center; gap: 8px;
+  }
+  .section-title::after { content: ''; flex: 1; height: 1px; background: var(--divider); }
+
+  .habit-row {
+    display: flex; align-items: center; gap: 12px;
+    padding: 9px 0; border-bottom: 1px solid rgba(200,191,168,0.4);
+  }
+  .habit-row:last-child { border-bottom: none; }
+  .habit-name { flex: 1; font-size: 13.5px; color: var(--ink); }
+  .habit-time { font-size: 11px; color: var(--brown); font-style: italic; min-width: 60px; text-align: right; }
+  .habit-btns { display: flex; gap: 6px; }
+
+  .btn-done, .btn-miss, .btn-skip {
+    width: 32px; height: 32px; border-radius: 4px; border: 1.5px solid;
+    font-size: 14px; cursor: pointer; display: flex; align-items: center;
+    justify-content: center; transition: all 0.15s; background: transparent;
+  }
+  .btn-done  { border-color: var(--done);   color: var(--done); }
+  .btn-miss  { border-color: var(--missed); color: var(--missed); }
+  .btn-skip  { border-color: var(--divider); color: var(--divider); }
+  .btn-done.active  { background: var(--done);   color: #fff; }
+  .btn-miss.active  { background: var(--missed); color: #fff; }
+  .btn-skip.active  { background: var(--divider); color: var(--ink); }
+  .btn-done:hover  { background: var(--done);   color: #fff; }
+  .btn-miss:hover  { background: var(--missed); color: #fff; }
+  .btn-skip:hover  { background: var(--divider); color: var(--ink); }
+
+  /* ── NOTES ── */
+  .notes-area {
+    width: 100%; margin-top: 16px;
+    border: 1px solid var(--divider); padding: 12px;
+    font-family: 'Lora', serif; font-size: 13px; color: var(--ink);
+    background: var(--cream); resize: vertical; min-height: 80px;
+    outline: none;
+  }
+  .notes-area:focus { border-color: var(--olive); }
+  .notes-label { font-size: 10px; text-transform: uppercase; letter-spacing: 0.1em; color: var(--soft-ink); margin-top: 14px; margin-bottom: 6px; }
+
+  /* ── SAVE BTN ── */
+  .save-btn {
+    background: var(--olive); color: var(--cream); border: none;
+    padding: 10px 28px; font-family: 'Lora', serif; font-size: 13px;
+    cursor: pointer; margin-top: 16px; letter-spacing: 0.05em;
+    transition: background 0.2s;
+  }
+  .save-btn:hover { background: var(--ink); }
+  .save-msg { font-size: 12px; color: var(--done); margin-left: 12px; opacity: 0; transition: opacity 0.3s; font-style: italic; }
+  .save-msg.show { opacity: 1; }
+
+  /* ── SCHEDULE TAB ── */
+  .schedule-table { width: 100%; border-collapse: collapse; }
+  .schedule-table th {
+    background: var(--ink); color: var(--cream);
+    padding: 10px 14px; text-align: left;
+    font-size: 10px; letter-spacing: 0.1em; text-transform: uppercase;
+    font-weight: 600; font-family: 'Lora', serif;
+  }
+  .schedule-table td {
+    padding: 9px 14px; font-size: 13px;
+    border-bottom: 1px solid var(--divider);
+    vertical-align: middle;
+  }
+  .schedule-table tr:nth-child(even) td { background: var(--cream-dark); }
+  .schedule-table tr:hover td { background: rgba(92,107,78,0.08); }
+  .sched-time { color: var(--brown); font-weight: 600; font-size: 12px; white-space: nowrap; }
+  .sched-title { font-weight: 600; color: var(--ink); }
+  .sched-detail { color: var(--soft-ink); font-size: 12px; font-style: italic; }
+  .tag {
+    display: inline-block; padding: 2px 8px; border-radius: 2px;
+    font-size: 10px; letter-spacing: 0.06em; text-transform: uppercase; font-weight: 600;
+  }
+  .tag-prayer { background: rgba(92,107,78,0.15); color: var(--olive); }
+  .tag-lang   { background: rgba(74,107,138,0.15); color: var(--blue); }
+  .tag-skill  { background: rgba(74,103,65,0.15); color: var(--done); }
+  .tag-health { background: rgba(139,111,71,0.15); color: var(--brown); }
+  .tag-rest   { background: rgba(122,90,138,0.15); color: var(--purple); }
+  .tag-sleep  { background: rgba(28,28,26,0.1); color: var(--soft-ink); }
+
+  /* ── OVERVIEW TAB ── */
+  .overview-grid { display: grid; grid-template-columns: repeat(5, 1fr); gap: 10px; margin-bottom: 28px; }
+  .ov-card {
+    background: var(--paper); border: 1px solid var(--divider);
+    padding: 14px; text-align: center;
+  }
+  .ov-day { font-family: 'Playfair Display', serif; font-size: 20px; color: var(--ink); }
+  .ov-score { font-size: 11px; color: var(--soft-ink); margin-top: 2px; }
+  .ov-bar { height: 4px; background: var(--divider); margin-top: 8px; border-radius: 2px; overflow: hidden; }
+  .ov-fill { height: 100%; background: var(--olive); transition: width 0.4s; }
+
+  /* ── EDIT HABITS TAB ── */
+  .edit-section { margin-bottom: 28px; }
+  .edit-row {
+    display: flex; align-items: center; gap: 10px;
+    padding: 8px 0; border-bottom: 1px solid var(--divider);
+  }
+  .edit-name-input, .edit-time-input {
+    border: 1px solid var(--divider); padding: 6px 10px;
+    font-family: 'Lora', serif; font-size: 13px; background: var(--cream);
+    color: var(--ink); outline: none;
+  }
+  .edit-name-input { flex: 1; }
+  .edit-time-input { width: 90px; }
+  .edit-name-input:focus, .edit-time-input:focus { border-color: var(--olive); }
+  .del-btn {
+    background: none; border: 1px solid var(--missed); color: var(--missed);
+    width: 28px; height: 28px; cursor: pointer; font-size: 14px;
+    display: flex; align-items: center; justify-content: center; transition: all 0.15s;
+  }
+  .del-btn:hover { background: var(--missed); color: #fff; }
+  .add-btn {
+    background: var(--olive); color: var(--cream); border: none;
+    padding: 9px 20px; font-family: 'Lora', serif; font-size: 12px;
+    cursor: pointer; letter-spacing: 0.05em; margin-top: 12px;
+    transition: background 0.15s;
+  }
+  .add-btn:hover { background: var(--ink); }
+  .drag-handle { color: var(--divider); cursor: grab; font-size: 16px; padding: 0 4px; }
+
+  /* ── MISC ── */
+  .streak-badge {
+    display: inline-flex; align-items: center; gap: 6px;
+    background: var(--brown); color: var(--cream);
+    padding: 4px 12px; font-size: 11px; letter-spacing: 0.06em;
+  }
+  .toast {
+    position: fixed; bottom: 24px; right: 24px;
+    background: var(--ink); color: var(--cream);
+    padding: 12px 20px; font-family: 'Lora', serif; font-size: 13px;
+    opacity: 0; transform: translateY(10px);
+    transition: all 0.3s; pointer-events: none;
+    border-left: 3px solid var(--olive);
+  }
+  .toast.show { opacity: 1; transform: translateY(0); }
+
+  @media (max-width: 600px) {
+    .content { padding: 16px; }
+    .overview-grid { grid-template-columns: repeat(3, 1fr); }
+    .header { padding: 14px 16px; }
+    .tabs { padding: 0 12px; }
+  }
+</style>
+</head>
+<body>
+
+<div class="header">
+  <div>
+    <div class="header-title">30-Day Routine Tracker</div>
+    <div class="header-sub">April 1 — April 30, 2026 &nbsp;·&nbsp; Dawood Abbas</div>
+  </div>
+  <div class="header-meta">
+    <strong id="streak-display">— day streak</strong>
+    <span>April 2026</span>
+  </div>
+</div>
+
+<div class="tabs">
+  <button class="tab active" onclick="switchTab('today')">Today</button>
+  <button class="tab" onclick="switchTab('overview')">Overview</button>
+  <button class="tab" onclick="switchTab('schedule')">Schedule</button>
+  <button class="tab" onclick="switchTab('edit')">Edit Habits</button>
+</div>
+
+<div class="content">
+
+  <!-- TODAY PANEL -->
+  <div class="panel active" id="panel-today">
+    <div class="day-selector">
+      <div>
+        <div class="day-label" id="today-label">Day 1 / 30</div>
+        <div class="day-sub" id="today-date-label">April 1, 2026</div>
+      </div>
+      <div class="day-nav">
+        <button onclick="changeDay(-1)">← Prev</button>
+        <button onclick="goToday()" style="background:var(--olive)">Today</button>
+        <button onclick="changeDay(1)">Next →</button>
+      </div>
+    </div>
+
+    <div class="day-dots" id="day-dots"></div>
+    <br>
+
+    <div class="day-card" id="day-card">
+      <div class="card-header">
+        <div>
+          <div class="card-date" id="card-date-display"></div>
+          <div style="font-size:12px;color:var(--soft-ink);margin-top:4px;font-style:italic;">Fill in your day honestly.</div>
+        </div>
+        <div class="progress-circle">
+          <div class="progress-num" id="prog-num">0</div>
+          <div class="progress-label">/ <span id="prog-total">0</span> done</div>
+        </div>
+      </div>
+      <div id="habits-container"></div>
+      <div class="notes-label">Thought / Notes for the day</div>
+      <textarea class="notes-area" id="day-notes" placeholder="Write anything — wins, struggles, du'a, reflection..."></textarea>
+      <br>
+      <button class="save-btn" onclick="saveDay()">Save Day</button>
+      <span class="save-msg" id="save-msg">Saved ✓</span>
+    </div>
+  </div>
+
+  <!-- OVERVIEW PANEL -->
+  <div class="panel" id="panel-overview">
+    <div style="display:flex;align-items:center;gap:16px;margin-bottom:20px;">
+      <div style="font-family:'Playfair Display',serif;font-size:22px;">Month Overview</div>
+      <div class="streak-badge" id="ov-streak">🔥 0 day streak</div>
+    </div>
+    <div class="overview-grid" id="overview-grid"></div>
+    <div style="font-size:12px;color:var(--soft-ink);font-style:italic;">Click any day to open it.</div>
+  </div>
+
+  <!-- SCHEDULE PANEL -->
+  <div class="panel" id="panel-schedule">
+    <div style="font-family:'Playfair Display',serif;font-size:22px;margin-bottom:18px;">Daily Schedule</div>
+    <table class="schedule-table" id="schedule-table"></table>
+    <div style="font-size:11px;color:var(--soft-ink);margin-top:14px;font-style:italic;">
+      ⚠ Prayer times (Fajr, Dhuhr, Asr, Maghrib, Isha) shift daily. Always follow actual adhan.
+    </div>
+  </div>
+
+  <!-- EDIT HABITS PANEL -->
+  <div class="panel" id="panel-edit">
+    <div style="font-family:'Playfair Display',serif;font-size:22px;margin-bottom:6px;">Edit Habits</div>
+    <div style="font-size:12px;color:var(--soft-ink);font-style:italic;margin-bottom:20px;">Changes apply to all future days. Past data is preserved.</div>
+    <div id="edit-list"></div>
+    <button class="add-btn" onclick="addHabit()">+ Add Habit</button>
+    <br><br>
+    <button class="save-btn" onclick="saveHabits()">Save Changes</button>
+    <span class="save-msg" id="edit-save-msg">Saved ✓</span>
+    <br><br>
+    <button onclick="resetAll()" style="background:none;border:1px solid var(--missed);color:var(--missed);padding:8px 18px;cursor:pointer;font-family:'Lora',serif;font-size:12px;">Reset All Data</button>
+  </div>
+
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+// ── DATA ────────────────────────────────────────────────────────────────────
+
+const DEFAULT_HABITS = [
+  { id: 'wake',     name: 'Wake at 4:30 AM',                 time: '4:30 AM',  section: 'Morning' },
+  { id: 'tahajjud', name: 'Tahajjud prayer',                 time: '4:45 AM',  section: 'Morning' },
+  { id: 'fajr',     name: 'Fajr prayer + Quran',             time: '5:15 AM',  section: 'Morning' },
+  { id: 'exercise', name: 'Exercise (30+ min)',               time: '5:45 AM',  section: 'Morning' },
+  { id: 'smoothie', name: 'Breakfast + smoothie',            time: '6:30 AM',  section: 'Morning' },
+  { id: 'italian',  name: 'Italian (1 hr)',                  time: '7:00 AM',  section: 'Languages' },
+  { id: 'persian',  name: 'Persian (45 min)',                time: '8:00 AM',  section: 'Languages' },
+  { id: 'dhuhr',    name: 'Dhuhr prayer',                   time: '12:30 PM', section: 'Prayers' },
+  { id: 'skill',    name: 'Skill building (1.5 hr)',         time: '1:30 PM',  section: 'Work & Study' },
+  { id: 'islamic',  name: 'Islamic study (45 min)',          time: '3:00 PM',  section: 'Work & Study' },
+  { id: 'asr',      name: 'Asr prayer',                     time: '3:45 PM',  section: 'Prayers' },
+  { id: 'italy',    name: 'Italy uni research (45 min)',     time: '4:00 PM',  section: 'Work & Study' },
+  { id: 'maghrib',  name: 'Maghrib prayer + adhkar',         time: '6:00 PM',  section: 'Prayers' },
+  { id: 'walk',     name: '10 min walk after dinner',        time: '6:30 PM',  section: 'Health' },
+  { id: 'deepwork', name: 'Deep work / project (1 hr)',      time: '7:00 PM',  section: 'Work & Study' },
+  { id: 'english',  name: 'English + revision (45 min)',     time: '8:00 PM',  section: 'Languages' },
+  { id: 'isha',     name: 'Isha prayer',                    time: '8:45 PM',  section: 'Prayers' },
+  { id: 'water',    name: '2L water',                       time: 'All day',  section: 'Health' },
+  { id: 'noscroll', name: 'No unnecessary scrolling (<1hr)',  time: 'All day',  section: 'Discipline' },
+  { id: 'journal',  name: 'Journal entry (Day N/365)',       time: '10:30 PM', section: 'Discipline' },
+  { id: 'sleep',    name: 'Sleep by 12:00 AM',              time: '12:00 AM', section: 'Discipline' },
+];
+
+const SCHEDULE_DATA = [
+  { time:'4:30 AM', title:'Wake Up',           detail:'Wudu · freshen up · drink water',               tag:'health' },
+  { time:'4:45 AM', title:'Tahajjud',          detail:'Night prayer + personal du\'a',                 tag:'prayer' },
+  { time:'5:15 AM', title:'Fajr + Quran',      detail:'Fajr prayer + 15 min Quran / Islamic study',    tag:'prayer' },
+  { time:'5:45 AM', title:'Exercise',          detail:'30–40 min workout, walk, or yoga',              tag:'health' },
+  { time:'6:30 AM', title:'Breakfast',         detail:'Nutritious meal + nutri smoothie',              tag:'health' },
+  { time:'7:00 AM', title:'Italian',           detail:'1 hr Italian — Duolingo, grammar, vocab',       tag:'lang' },
+  { time:'8:00 AM', title:'Persian',           detail:'45 min Persian — vocab, listening',             tag:'lang' },
+  { time:'8:45 AM', title:'Revision / Break',  detail:'Review notes, rest before Dhuhr',               tag:'rest' },
+  { time:'12:30 PM',title:'Dhuhr',             detail:'Dhuhr prayer',                                  tag:'prayer' },
+  { time:'12:45 PM',title:'Lunch + Rest',      detail:'Meal · 20 min rest or light walk',              tag:'health' },
+  { time:'1:30 PM', title:'Skill Building',    detail:'1.5 hr coding / AI / tech skill',               tag:'skill' },
+  { time:'3:00 PM', title:'Islamic Study',     detail:'45 min Islamic concepts (book / lecture)',      tag:'prayer' },
+  { time:'3:45 PM', title:'Asr',               detail:'Asr prayer',                                    tag:'prayer' },
+  { time:'4:00 PM', title:'Italy Uni Research',detail:'PoliTO / EDISU / TIL / scholarships',          tag:'skill' },
+  { time:'4:45 PM', title:'Free / Review',     detail:'Review notes · messages · short break',         tag:'rest' },
+  { time:'6:00 PM', title:'Maghrib',           detail:'Maghrib prayer + evening adhkar',               tag:'prayer' },
+  { time:'6:20 PM', title:'Dinner + Walk',     detail:'Dinner + 10 min walk after meal',               tag:'health' },
+  { time:'7:00 PM', title:'Deep Work',         detail:'1 hr focused project / writing / build',        tag:'skill' },
+  { time:'8:00 PM', title:'English + Revision',detail:'45 min English study + daily revision',         tag:'lang' },
+  { time:'8:45 PM', title:'Isha',              detail:'Isha prayer',                                   tag:'prayer' },
+  { time:'9:00 PM', title:'Personal Time',     detail:'Reading · reflection · personal pursuits',      tag:'rest' },
+  { time:'10:30 PM',title:'Journal',           detail:'Day N/365 journal entry',                       tag:'skill' },
+  { time:'11:00 PM',title:'Wind Down',         detail:'No screens · du\'a · Ayat al-Kursi',            tag:'rest' },
+  { time:'12:00 AM',title:'Sleep',             detail:'7 hours — non-negotiable',                      tag:'sleep' },
+];
+
+const START_DATE = new Date(2026, 3, 1); // April 1 2026
+const TOTAL_DAYS = 30;
+
+function getState() {
+  try {
+    return JSON.parse(localStorage.getItem('routine_v2') || '{}');
+  } catch { return {}; }
+}
+function saveState(s) {
+  localStorage.setItem('routine_v2', JSON.stringify(s));
+}
+function getHabits() {
+  try {
+    const h = localStorage.getItem('habits_v2');
+    return h ? JSON.parse(h) : DEFAULT_HABITS;
+  } catch { return DEFAULT_HABITS; }
+}
+function saveHabitsStore(h) {
+  localStorage.setItem('habits_v2', JSON.stringify(h));
+}
+
+let currentDay = 1;
+let habits = getHabits();
+let state = getState();
+
+function getCurrentRealDay() {
+  const today = new Date();
+  const diff = Math.floor((today - START_DATE) / 86400000) + 1;
+  return Math.min(Math.max(diff, 1), TOTAL_DAYS);
+}
+
+function getDayDate(day) {
+  const d = new Date(START_DATE);
+  d.setDate(d.getDate() + day - 1);
+  return d.toLocaleDateString('en-GB', { weekday:'long', day:'numeric', month:'long', year:'numeric' });
+}
+
+function getDayScore(day) {
+  const d = state[day];
+  if (!d) return null;
+  const vals = Object.values(d.habits || {});
+  if (!vals.length) return null;
+  const done = vals.filter(v => v === 'done').length;
+  return { done, total: habits.length };
+}
+
+// ── SECTIONS ────────────────────────────────────────────────────────────────
+function groupHabits() {
+  const groups = {};
+  habits.forEach(h => {
+    if (!groups[h.section]) groups[h.section] = [];
+    groups[h.section].push(h);
+  });
+  return groups;
+}
+
+// ── RENDER TODAY ─────────────────────────────────────────────────────────────
+function renderToday() {
+  document.getElementById('today-label').textContent = `Day ${currentDay} / ${TOTAL_DAYS}`;
+  document.getElementById('today-date-label').textContent = getDayDate(currentDay);
+  document.getElementById('card-date-display').textContent = getDayDate(currentDay);
+
+  const d = state[currentDay] || { habits: {}, notes: '' };
+  document.getElementById('day-notes').value = d.notes || '';
+
+  const groups = groupHabits();
+  let html = '';
+  habits.forEach(h => {
+    const val = (d.habits || {})[h.id] || '';
+    // section header
+  });
+
+  let sectHtml = '';
+  let lastSection = '';
+  habits.forEach(h => {
+    if (h.section !== lastSection) {
+      sectHtml += `<div class="section-title">${h.section}</div>`;
+      lastSection = h.section;
+    }
+    const val = (d.habits || {})[h.id] || '';
+    sectHtml += `
+      <div class="habit-row">
+        <div class="habit-name">${h.name}</div>
+        <div class="habit-time">${h.time}</div>
+        <div class="habit-btns">
+          <button class="btn-done ${val==='done'?'active':''}" onclick="setHabit('${h.id}','done')" title="Done">✓</button>
+          <button class="btn-miss ${val==='miss'?'active':''}" onclick="setHabit('${h.id}','miss')" title="Missed">✗</button>
+          <button class="btn-skip ${val==='skip'?'active':''}" onclick="setHabit('${h.id}','skip')" title="N/A">—</button>
+        </div>
+      </div>`;
+  });
+  document.getElementById('habits-container').innerHTML = sectHtml;
+
+  updateProgress();
+  renderDots();
+}
+
+function updateProgress() {
+  const d = state[currentDay] || { habits: {} };
+  const done = Object.values(d.habits || {}).filter(v => v === 'done').length;
+  document.getElementById('prog-num').textContent = done;
+  document.getElementById('prog-total').textContent = habits.length;
+}
+
+function setHabit(id, val) {
+  if (!state[currentDay]) state[currentDay] = { habits: {}, notes: '' };
+  if (!state[currentDay].habits) state[currentDay].habits = {};
+  const cur = state[currentDay].habits[id];
+  state[currentDay].habits[id] = cur === val ? '' : val;
+  saveState(state);
+  renderToday();
+}
+
+function saveDay() {
+  if (!state[currentDay]) state[currentDay] = { habits: {}, notes: '' };
+  state[currentDay].notes = document.getElementById('day-notes').value;
+  saveState(state);
+  const msg = document.getElementById('save-msg');
+  msg.classList.add('show');
+  setTimeout(() => msg.classList.remove('show'), 2000);
+  showToast('Day saved ✓');
+  renderDots();
+}
+
+// ── DOTS ─────────────────────────────────────────────────────────────────────
+function renderDots() {
+  const container = document.getElementById('day-dots');
+  let html = '';
+  for (let d = 1; d <= TOTAL_DAYS; d++) {
+    const score = getDayScore(d);
+    let cls = '';
+    if (d === currentDay) cls = 'current';
+    else if (score) {
+      const pct = score.done / score.total;
+      cls = pct >= 0.7 ? 'completed' : 'partial';
+    }
+    html += `<div class="day-dot ${cls}" onclick="jumpToDay(${d})" title="Day ${d}">${d}</div>`;
+  }
+  container.innerHTML = html;
+}
+
+function jumpToDay(d) { currentDay = d; renderToday(); }
+function changeDay(delta) {
+  currentDay = Math.min(Math.max(currentDay + delta, 1), TOTAL_DAYS);
+  renderToday();
+}
+function goToday() {
+  currentDay = getCurrentRealDay();
+  renderToday();
+}
+
+// ── OVERVIEW ─────────────────────────────────────────────────────────────────
+function renderOverview() {
+  let streak = 0, maxStreak = 0, cur = 0;
+  for (let d = 1; d <= TOTAL_DAYS; d++) {
+    const score = getDayScore(d);
+    if (score && score.done / score.total >= 0.7) { cur++; maxStreak = Math.max(maxStreak, cur); }
+    else cur = 0;
+  }
+  // current streak from today back
+  let cs = 0;
+  for (let d = getCurrentRealDay(); d >= 1; d--) {
+    const score = getDayScore(d);
+    if (score && score.done / score.total >= 0.7) cs++;
+    else break;
+  }
+  document.getElementById('ov-streak').textContent = `🔥 ${cs} day streak`;
+  document.getElementById('streak-display').textContent = `${cs} day streak`;
+
+  let html = '';
+  for (let d = 1; d <= TOTAL_DAYS; d++) {
+    const score = getDayScore(d);
+    const pct = score ? Math.round(score.done / score.total * 100) : 0;
+    const color = pct >= 70 ? 'var(--done)' : pct >= 40 ? 'var(--brown-light)' : 'var(--divider)';
+    html += `<div class="ov-card" onclick="jumpToOverviewDay(${d})" style="cursor:pointer">
+      <div class="ov-day">${d}</div>
+      <div class="ov-score">${score ? score.done + '/' + score.total : '—'}</div>
+      <div class="ov-bar"><div class="ov-fill" style="width:${pct}%;background:${color}"></div></div>
+    </div>`;
+  }
+  document.getElementById('overview-grid').innerHTML = html;
+}
+
+function jumpToOverviewDay(d) {
+  currentDay = d;
+  switchTab('today');
+  renderToday();
+}
+
+// ── SCHEDULE ─────────────────────────────────────────────────────────────────
+function renderSchedule() {
+  const tagMap = {
+    prayer: ['tag-prayer', 'Prayer'],
+    lang:   ['tag-lang', 'Language'],
+    skill:  ['tag-skill', 'Skill/Work'],
+    health: ['tag-health', 'Health'],
+    rest:   ['tag-rest', 'Rest'],
+    sleep:  ['tag-sleep', 'Sleep'],
+  };
+  let html = `<thead><tr>
+    <th>Time</th><th>Activity</th><th>Details</th><th>Category</th>
+  </tr></thead><tbody>`;
+  SCHEDULE_DATA.forEach(row => {
+    const [cls, label] = tagMap[row.tag] || ['', row.tag];
+    html += `<tr>
+      <td class="sched-time">${row.time}</td>
+      <td class="sched-title">${row.title}</td>
+      <td class="sched-detail">${row.detail}</td>
+      <td><span class="tag ${cls}">${label}</span></td>
+    </tr>`;
+  });
+  html += '</tbody>';
+  document.getElementById('schedule-table').innerHTML = html;
+}
+
+// ── EDIT HABITS ───────────────────────────────────────────────────────────────
+function renderEditList() {
+  const sections = [...new Set(habits.map(h => h.section))];
+  let html = '';
+  habits.forEach((h, i) => {
+    html += `<div class="edit-row" id="edit-row-${i}">
+      <span class="drag-handle">⠿</span>
+      <input class="edit-name-input" value="${h.name}" id="ename-${i}" placeholder="Habit name">
+      <input class="edit-time-input" value="${h.time}" id="etime-${i}" placeholder="Time">
+      <input class="edit-name-input" value="${h.section}" id="esect-${i}" placeholder="Section" style="max-width:120px">
+      <button class="del-btn" onclick="deleteHabit(${i})">✕</button>
+    </div>`;
+  });
+  document.getElementById('edit-list').innerHTML = html;
+}
+
+function deleteHabit(i) {
+  if (!confirm('Remove this habit?')) return;
+  habits.splice(i, 1);
+  renderEditList();
+}
+
+function addHabit() {
+  habits.push({ id: 'habit_' + Date.now(), name: 'New Habit', time: '', section: 'Other' });
+  renderEditList();
+  showToast('Habit added — edit the name above');
+}
+
+function saveHabits() {
+  habits = habits.map((h, i) => ({
+    ...h,
+    name: document.getElementById(`ename-${i}`).value.trim() || h.name,
+    time: document.getElementById(`etime-${i}`).value.trim(),
+    section: document.getElementById(`esect-${i}`).value.trim() || 'Other',
+  }));
+  saveHabitsStore(habits);
+  const msg = document.getElementById('edit-save-msg');
+  msg.classList.add('show');
+  setTimeout(() => msg.classList.remove('show'), 2000);
+  showToast('Habits saved ✓');
+  renderToday();
+}
+
+function resetAll() {
+  if (!confirm('This will delete ALL tracked data. Are you sure?')) return;
+  localStorage.removeItem('routine_v2');
+  localStorage.removeItem('habits_v2');
+  state = {};
+  habits = DEFAULT_HABITS;
+  renderToday();
+  renderOverview();
+  showToast('All data reset.');
+}
+
+// ── TOAST ─────────────────────────────────────────────────────────────────────
+function showToast(msg) {
+  const t = document.getElementById('toast');
+  t.textContent = msg;
+  t.classList.add('show');
+  setTimeout(() => t.classList.remove('show'), 2500);
+}
+
+// ── TABS ─────────────────────────────────────────────────────────────────────
+function switchTab(name) {
+  document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+  document.querySelectorAll('.panel').forEach(p => p.classList.remove('active'));
+  document.getElementById('panel-' + name).classList.add('active');
+  document.querySelector(`.tab[onclick="switchTab('${name}')"]`).classList.add('active');
+  if (name === 'overview') renderOverview();
+  if (name === 'schedule') renderSchedule();
+  if (name === 'edit') renderEditList();
+  if (name === 'today') renderToday();
+}
+
+// ── INIT ─────────────────────────────────────────────────────────────────────
+currentDay = getCurrentRealDay();
+renderToday();
+renderSchedule();
+</script>
+</body>
+</html>
